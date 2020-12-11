@@ -11,13 +11,13 @@ print("Source image " + str(source.shape))
 target = cv2.imread(PATH+'pexelB-0.png',cv2.IMREAD_COLOR)
 print("Target image " + str(target.shape))
 
-cv2.imshow('source',source)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-cv2.imshow('target',target)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow('source',source)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+#
+# cv2.imshow('target',target)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 
 ##Swapping the channels
@@ -30,5 +30,8 @@ for i in range(rows):
      color2 = [color[2], color[1], color[0]]
      output[i,j]=color2;
 
+cv2.imshow('output',output)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 print("Saving the output")
 cv2.imwrite('output.png',output)

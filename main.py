@@ -1,4 +1,4 @@
 from OPTransporter import OPTransporter
 
-ot = OPTransporter("pexelB-0.png", "pexelA-0.png")
-ot.opt_transport_v1()
+ot = OPTransporter("landscape240-1.jpg", "landscape240-2.jpg")
+ot.opt_transport_v2(0.5, 50)

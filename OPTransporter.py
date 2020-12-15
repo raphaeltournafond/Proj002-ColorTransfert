@@ -28,6 +28,12 @@ def project_on_direction(direction, image):
     h, w, channels = image.shape
     for i in range(h):
         for j in range(w):
+            # r, g, b = image[i, j]
+            # x, y, z = direction
+            # x_r = x * r
+            # y_g = y * g
+            # z_b = z * b
+            # res = x_r + y_g + z_b
             res = np.dot(direction, image[i, j])
             tup = (res, i, j)
             projection.append(tup)
@@ -64,7 +70,7 @@ class OPTransporter:
                 d_pix = sorted_destination_projection[i]
                 s_pix = sorted_source_projection[i]
                 output[d_pix[1], d_pix[2]] = self.source[s_pix[1], s_pix[2]]
-            cv2.imwrite('output.png', output)
+            cv2.imwrite('output.png', output * 255.0)
             return True
         return False
 
@@ -79,9 +85,9 @@ class OPTransporter:
                     d_pix = sorted_destination_projection[i]
                     s_pix = sorted_source_projection[i]
                     diff = d_pix[0] - s_pix[0]
-                    b_c = output[d_pix[1], d_pix[2]]
+                    b_c = output[s_pix[1], s_pix[2]]
                     n_c = b_c + gamma * diff * direction
-                    output[d_pix[1], d_pix[2]] = n_c
+                    output[s_pix[1], s_pix[2]] = n_c
             cv2.imwrite('output.png', output * 255.0)
             t1 = time.time()
             print(t1-t0)

@@ -1,5 +1,4 @@
 # Ambroise Decouttere & Raphael Tournafond
-import math
 import time
 
 import numpy as np
@@ -50,8 +49,7 @@ def sort_and_project(source, destination):
 
 
 def convertToFloat(image):
-    image = np.float32(image)
-    return image * 1.0/255.0
+    return np.float32(image)
 
 
 class OPTransporter:
@@ -70,7 +68,7 @@ class OPTransporter:
                 d_pix = sorted_destination_projection[i]
                 s_pix = sorted_source_projection[i]
                 output[d_pix[1], d_pix[2]] = self.source[s_pix[1], s_pix[2]]
-            cv2.imwrite('output.png', output * 255.0)
+            cv2.imwrite('output.png', output)
             return True
         return False
 
@@ -88,7 +86,7 @@ class OPTransporter:
                     b_c = output[s_pix[1], s_pix[2]]
                     n_c = b_c + gamma * diff * direction
                     output[s_pix[1], s_pix[2]] = n_c
-            cv2.imwrite('output.png', output * 255.0)
+            cv2.imwrite('output.png', output)
             t1 = time.time()
             print(t1-t0)
             return True

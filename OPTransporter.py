@@ -24,34 +24,25 @@ def get_random_direction():
 
 def project_on_direction(direction, image):
     # (R, G, B) . (Ur, Ug, Ub) = Rur + Gug + Bub
-    projection = []
-    h, w, channels = image.shape
-    for i in range(h):
-        for j in range(w):
-            # r, g, b = image[i, j]
-            # x, y, z = direction
-            # x_r = x * r
-            # y_g = y * g
-            # z_b = z * b
-            # res = x_r + y_g + z_b
-            res = np.dot(direction, image[i, j])
-            tup = (res, i, j)
-            projection.append(tup)
-    return projection
+    b, g, r = cv2.split(image)
+    b = np.asarray(b).reshape(-1)
+    g = np.asarray(g).reshape(-1)
+    r = np.asarray(r).reshape(-1)
+    dots = direction[0] * b + direction[1] * g + direction[2] * r
+    return dots
 
 
 def sort_and_project(source, destination):
-    direction = get_random_direction()
-    source_projection = project_on_direction(direction, source)
-    destination_projection = project_on_direction(direction, destination)
-    sorted_source_projection = sorted(source_projection, key=lambda tup: tup[0])
-    sorted_destination_projection = sorted(destination_projection, key=lambda tup: tup[0])
-    return sorted_source_projection, sorted_destination_projection, direction
+    d = get_random_direction()
+    s_p = project_on_direction(d, source)
+    d_p = project_on_direction(d, destination)
+    s_i = np.argsort(s_p)
+    d_i = np.argsort(s_p)
+    return s_p, d_p, s_i, d_i, d
 
 
 def convertToFloat(image):
-    image = np.float32(image)
-    return image * 1.0/255.0
+    return np.float32(image)
 
 
 class OPTransporter:
@@ -70,26 +61,27 @@ class OPTransporter:
                 d_pix = sorted_destination_projection[i]
                 s_pix = sorted_source_projection[i]
                 output[d_pix[1], d_pix[2]] = self.source[s_pix[1], s_pix[2]]
-            cv2.imwrite('output.png', output * 255.0)
+            cv2.imwrite('output.png', output)
             return True
         return False
 
     def opt_transport_v2(self, gamma, iteration):
         if self.source.shape == self.destination.shape:
+            h, w, c = self.source.shape
             output = self.source.copy()
             t0 = time.time()
             for k in range(iteration):
                 print(k)
-                sorted_source_projection, sorted_destination_projection, direction = sort_and_project(output, self.destination)
-                for i in range(len(sorted_destination_projection)):
-                    d_pix = sorted_destination_projection[i]
-                    s_pix = sorted_source_projection[i]
-                    diff = d_pix[0] - s_pix[0]
-                    b_c = output[s_pix[1], s_pix[2]]
-                    n_c = b_c + gamma * diff * direction
-                    output[s_pix[1], s_pix[2]] = n_c
-            cv2.imwrite('output.png', output * 255.0)
-            t1 = time.time()
-            print(t1-t0)
+                s_p, d_p, s_i, d_i, d = sort_and_project(output, self.destination)
+                for i in range(len(s_p)):
+                    diff = d_p[i] - s_p[i]
+                    print(diff)
+                    x = s_i[i] // w - 1
+                    y = s_i[i] % w
+                    b_c = output[x, y]
+                    n_c = b_c + gamma * diff * d
+                    output[x, y] = n_c
+            cv2.imwrite('output.png', output)
+            print(time.time()-t0)
             return True
         return False

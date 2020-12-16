@@ -1,4 +1,5 @@
 # Ambroise Decouttere & Raphael Tournafond
+import sys
 import time
 
 import numpy as np
@@ -23,29 +24,37 @@ def get_random_direction():
 
 def project_on_direction(direction, image):
     # (R, G, B) . (Ur, Ug, Ub) = Rur + Gug + Bub
-    projection = []
-    h, w, channels = image.shape
-    for i in range(h):
-        for j in range(w):
-            # r, g, b = image[i, j]
-            # x, y, z = direction
-            # x_r = x * r
-            # y_g = y * g
-            # z_b = z * b
-            # res = x_r + y_g + z_b
-            res = np.dot(direction, image[i, j])
-            tup = (res, i, j)
-            projection.append(tup)
-    return projection
+    b, g, r = cv2.split(image)
+    b = np.asarray(b).reshape(-1)
+    g = np.asarray(g).reshape(-1)
+    r = np.asarray(r).reshape(-1)
+    dots = direction[0] * b + direction[1] * g + direction[2] * r
+    return dots
 
 
 def sort_and_project(source, destination):
-    direction = get_random_direction()
-    source_projection = project_on_direction(direction, source)
-    destination_projection = project_on_direction(direction, destination)
-    sorted_source_projection = sorted(source_projection, key=lambda tup: tup[0])
-    sorted_destination_projection = sorted(destination_projection, key=lambda tup: tup[0])
-    return sorted_source_projection, sorted_destination_projection, direction
+    d = get_random_direction()
+    s_p = project_on_direction(d, source)
+    d_p = project_on_direction(d, destination)
+    s_i = np.argsort(s_p)
+    d_i = np.argsort(s_p)
+    return s_p, d_p, s_i, d_i, d
+
+
+def get_new_projection(source, destination, gamma):
+    h, w, c = source.shape
+    d = get_random_direction()
+    s_p = project_on_direction(d, source)
+    d_p = project_on_direction(d, destination)
+    s_p = np.sort(s_p)
+    order = np.argsort(d_p)
+    d_p = np.array(d_p)[order]
+    diff = np.subtract(s_p, d_p)
+    reordered_diff = np.empty((len(diff), 3))
+    for i in range(len(diff)):
+        reordered_diff[order[i]] = diff[i] * gamma * d
+    res = np.reshape(reordered_diff, (h, w, 3))
+    return res
 
 
 def convertToFloat(image):
@@ -62,32 +71,31 @@ class OPTransporter:
 
     def opt_transport_v1(self):
         if self.source.shape == self.destination.shape:
-            sorted_source_projection, sorted_destination_projection, direction = sort_and_project(self.source, self.destination)
-            output = self.source.copy()
-            for i in range(len(sorted_destination_projection)):
-                d_pix = sorted_destination_projection[i]
-                s_pix = sorted_source_projection[i]
-                output[d_pix[1], d_pix[2]] = self.source[s_pix[1], s_pix[2]]
+            h, w, c = self.source.shape
+            s_p, d_p, s_i, d_i, d = sort_and_project(self.source, self.destination)
+            output = self.destination.copy()
+            for i in range(len(s_p)):
+                s_i_i = s_i[i]
+                d_i_i = d_i[i]
+                xd = d_i_i // w
+                yd = d_i_i % w
+                xs = s_i_i // w
+                ys = s_i_i % w
+                output[xd, yd] = self.source[xs, ys]
             cv2.imwrite('output.png', output)
             return True
         return False
 
     def opt_transport_v2(self, gamma, iteration):
+        t0 = time.time()
         if self.source.shape == self.destination.shape:
-            output = self.source.copy()
-            t0 = time.time()
+            output = self.destination.copy()
             for k in range(iteration):
-                print(k)
-                sorted_source_projection, sorted_destination_projection, direction = sort_and_project(output, self.destination)
-                for i in range(len(sorted_destination_projection)):
-                    d_pix = sorted_destination_projection[i]
-                    s_pix = sorted_source_projection[i]
-                    diff = d_pix[0] - s_pix[0]
-                    b_c = output[s_pix[1], s_pix[2]]
-                    n_c = b_c + gamma * diff * direction
-                    output[s_pix[1], s_pix[2]] = n_c
+                print('\r' + str(k+1) + "/" + str(iteration), end='', flush=True)
+                diff = get_new_projection(self.source, output, gamma)
+                output = np.add(output, diff)
             cv2.imwrite('output.png', output)
-            t1 = time.time()
-            print(t1-t0)
+            print()
+            print(time.time() - t0)
             return True
         return False

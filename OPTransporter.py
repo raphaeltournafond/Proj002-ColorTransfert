@@ -42,19 +42,33 @@ def sort_and_project(source, destination):
 
 
 def get_new_projection(source, destination, gamma):
-    h, w, c = source.shape
     d = get_random_direction()
+    # Project the source and destination images on the random direction
     s_p = project_on_direction(d, source)
     d_p = project_on_direction(d, destination)
+    # Sort the source and destination scalars lists and remember the destination permutation
     s_p = np.sort(s_p)
     order = np.argsort(d_p)
     d_p = np.array(d_p)[order]
+    # Get the difference along the direction
     diff = np.subtract(s_p, d_p)
-    reordered_diff = np.empty((len(diff), 3))
-    for i in range(len(diff)):
-        reordered_diff[order[i]] = diff[i] * gamma * d
-    res = np.reshape(reordered_diff, (h, w, 3))
-    return res
+    # Compute a fraction of the vector length
+    g_d = gamma * d
+    # Apply the direction on each axis
+    diff_x = np.multiply(diff, g_d[0])
+    diff_y = np.multiply(diff, g_d[1])
+    diff_z = np.multiply(diff, g_d[2])
+    # Invert the permutation order
+    inv = np.empty_like(order)
+    inv[order] = np.arange(len(order), dtype=order.dtype)
+    # Reorder the array according to the destination picture
+    diff_x = np.array(diff_x)[inv]
+    diff_y = np.array(diff_y)[inv]
+    diff_z = np.array(diff_z)[inv]
+    # Resize them into the image shape
+    diff = np.dstack((diff_x, diff_y, diff_z))
+    diff = np.reshape(diff, destination.shape)
+    return diff
 
 
 def convertToFloat(image):

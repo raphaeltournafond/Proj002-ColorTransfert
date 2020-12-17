@@ -1,4 +1,4 @@
 from OPTransporter import OPTransporter
 
-ot = OPTransporter("apple-resized.png", "pen.png")
-ot.opt_transport_v2(0.1, 1000)
+ot = OPTransporter("forest-small.png", "fjord-small.png")
+ot.opt_transport_v2(0.1, 100)

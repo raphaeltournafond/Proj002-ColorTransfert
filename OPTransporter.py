@@ -1,7 +1,5 @@
 # Ambroise Decouttere & Raphael Tournafond
-import sys
 import time
-
 import numpy as np
 import cv2
 
@@ -78,10 +76,14 @@ def convertToFloat(image):
 class OPTransporter:
 
     def __init__(self, source_path, destination_path):
-        source = cv2.imread(source_path, cv2.IMREAD_COLOR)
-        self.source = convertToFloat(source)
         destination = cv2.imread(destination_path, cv2.IMREAD_COLOR)
-        self.destination = convertToFloat(destination)
+        destination = np.uint8(destination)
+        self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
+        source = cv2.imread(source_path, cv2.IMREAD_COLOR)
+        source = np.uint8(source)
+        source = cv2.cvtColor(source, cv2.COLOR_BGR2Lab)
+        h, w, c = self.destination.shape
+        self.source = cv2.resize(source, (w, h), interpolation=cv2.INTER_LINEAR)
 
     def opt_transport_v1(self):
         if self.source.shape == self.destination.shape:
@@ -108,7 +110,9 @@ class OPTransporter:
                 print('\r' + str(k+1) + "/" + str(iteration), end='', flush=True)
                 diff = get_new_projection(self.source, output, gamma)
                 output = np.add(output, diff)
+            output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             cv2.imwrite('output.png', output)
+            cv2.imshow("Output", output)
             print()
             print(time.time() - t0)
             return True

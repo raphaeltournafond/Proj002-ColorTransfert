@@ -75,13 +75,20 @@ def convertToFloat(image):
 
 class OPTransporter:
 
-    def __init__(self, source_path, destination_path):
+    def __init__(self, source_path, destination_path, color_space):
         destination = cv2.imread(destination_path, cv2.IMREAD_COLOR)
-        destination = np.uint8(destination)
-        self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
+        self.color_space = color_space
+        if color_space == "lab":
+            destination = np.uint8(destination)
+            self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
+        else:
+            self.destination = np.float32(destination)
         source = cv2.imread(source_path, cv2.IMREAD_COLOR)
-        source = np.uint8(source)
-        source = cv2.cvtColor(source, cv2.COLOR_BGR2Lab)
+        if color_space == "lab":
+            source = np.uint8(source)
+            source = cv2.cvtColor(source, cv2.COLOR_BGR2Lab)
+        else:
+            source = np.float32(source)
         h, w, c = self.destination.shape
         self.source = cv2.resize(source, (w, h), interpolation=cv2.INTER_LINEAR)
 
@@ -110,7 +117,8 @@ class OPTransporter:
                 print('\r' + str(k+1) + "/" + str(iteration), end='', flush=True)
                 diff = get_new_projection(self.source, output, gamma)
                 output = np.add(output, diff)
-            output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
+            if self.color_space == "lab":
+                output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             cv2.imwrite('output.png', output)
             cv2.imshow("Output", output)
             print()

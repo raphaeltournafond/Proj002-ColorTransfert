@@ -35,7 +35,7 @@ def sort_and_project(source, destination):
     s_p = project_on_direction(d, source)
     d_p = project_on_direction(d, destination)
     s_i = np.argsort(s_p)
-    d_i = np.argsort(s_p)
+    d_i = np.argsort(d_p)
     return s_p, d_p, s_i, d_i, d
 
 
@@ -75,16 +75,19 @@ def convertToFloat(image):
 
 class OPTransporter:
 
-    def __init__(self, source_path, destination_path, color_space):
+    LAB = True
+    RGB = False
+
+    def __init__(self, source_path, destination_path, use_lab=False):
         destination = cv2.imread(destination_path, cv2.IMREAD_COLOR)
-        self.color_space = color_space
-        if color_space == "lab":
+        self.use_lab = use_lab
+        if use_lab:
             destination = np.uint8(destination)
             self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
         else:
             self.destination = np.float32(destination)
         source = cv2.imread(source_path, cv2.IMREAD_COLOR)
-        if color_space == "lab":
+        if use_lab:
             source = np.uint8(source)
             source = cv2.cvtColor(source, cv2.COLOR_BGR2Lab)
         else:
@@ -114,14 +117,13 @@ class OPTransporter:
         if self.source.shape == self.destination.shape:
             output = self.destination.copy()
             for k in range(iteration):
-                print('\r' + str(k+1) + "/" + str(iteration), end='', flush=True)
+                print('\rIteration ' + str(k+1) + " out of " + str(iteration), end='', flush=True)
                 diff = get_new_projection(self.source, output, gamma)
                 output = np.add(output, diff)
-            if self.color_space == "lab":
+            if self.use_lab:
                 output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             cv2.imwrite('output.png', output)
-            cv2.imshow("Output", output)
             print()
-            print(time.time() - t0)
+            print("Elapsed time : ", time.time() - t0)
             return True
         return False

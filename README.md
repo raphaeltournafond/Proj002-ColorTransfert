@@ -22,3 +22,40 @@ This function uses the directional vector to get the new color of each pixel by
 applying a part of this vector to the pixel to make it 
 This function use the directionnal vector to get a new color more similar to the 
 closest projected pixel but without using this pixel.
+
+
+## Examples
+
+Size of image used: 1024x1280
+
+### opt_transport_v1 RGB
+
+| Source  | Destination  | Result  | 
+|---|---|---|
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_rgb_v1.png)  |
+Time : 5.1 sec
+
+### opt_transport_v1 Lab
+
+| Source  | Destination  | Result  | 
+|---|---|---|
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_lab_v1.png)  |
+Time : 2.6 sec
+
+### opt_transport_v2 RGB
+
+Iterations = 100 / Fraction of directional vector used = 0.1
+
+| Source  | Destination  | Result  | 
+|---|---|---|
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_rgb_v2.png)  |
+Time : 37.4 sec
+
+### opt_transport_v2 Lab
+
+Iterations = 100 / Fraction of directional vector used = 0.1
+
+| Source  | Destination  | Result  | 
+|---|---|---|
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_lab_v2.png)  |
+Time : 43.4 sec

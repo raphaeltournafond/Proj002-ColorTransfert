@@ -115,7 +115,13 @@ def get_new_projection(source, destination, gamma):
 
 
 def convertToFloat(image):
-    return np.float32(image)
+    image = np.float32(image)
+    return image * (1./255.)
+
+
+def convertToInt(image):
+    image = np.uint8(image)
+    return image * 255.
 
 
 class OPTransporter:
@@ -144,7 +150,7 @@ class OPTransporter:
             if self.verbose:
                 print("Using LAB color space")
             # Converting to uint8 is requested to go from RBG to LAB
-            destination = np.uint8(destination)
+            destination = convertToFloat(destination)
             self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
         else:
             # Using float32 increase the computation speed
@@ -200,6 +206,7 @@ class OPTransporter:
                 output[xd, yd] = self.source[xs, ys]
             if self.use_lab:
                 # If LAB is used the output file needs to be converted to uint8
+                output = np.clip(output, 0, 255)
                 output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             self.save_image(output, 1)
             if self.verbose:
@@ -228,6 +235,7 @@ class OPTransporter:
                 # Move the destination image towards the source colors in the random destination
                 output = np.add(output, diff)
             if self.use_lab:
+                output = np.clip(output, 0, 255)
                 output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             self.save_image(output, 2)
             if self.verbose:

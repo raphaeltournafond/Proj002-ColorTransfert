@@ -73,7 +73,7 @@ ot.opt_transport_v1()
 
 | Source  | Destination  | Result  | 
 |---|---|---|
-| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_rgb_v1.png)  |
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](results/output_rgb_v1.png)  |
 **Time : 5.1 sec**
 
 ### opt_transport_v1 Lab
@@ -85,7 +85,7 @@ ot.opt_transport_v1()
 
 | Source  | Destination  | Result  | 
 |---|---|---|
-| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_lab_v1.png)  |
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](results/output_lab_v1.png)  |
 **Time : 2.6 sec**
 
 ### opt_transport_v2 RGB
@@ -99,7 +99,7 @@ Iterations = 100 / Fraction of directional vector used = 0.1
 
 | Source  | Destination  | Result  | 
 |---|---|---|
-| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_rgb_v2.png)  |
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](results/output_rgb_v2.png)  |
 **Time : 37.4 sec**
 
 ### opt_transport_v2 Lab
@@ -113,7 +113,7 @@ Iterations = 100 / Fraction of directional vector used = 0.1
 
 | Source  | Destination  | Result  | 
 |---|---|---|
-| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_lab_v2.png)  |
+| ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](results/output_lab_v2.png)  |
 **Time : 43.4 sec**
 
 Despite the increase of execution time the second version (sliced OPT transport)

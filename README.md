@@ -59,3 +59,27 @@ Iterations = 100 / Fraction of directional vector used = 0.1
 |---|---|---|
 | ![](pexelA-0.png)  | ![](pexelB-0.png)  | ![](output_lab_v2.png)  |
 Time : 43.4 sec
+
+## Installation
+
+First you need to get the file ```OPTransporter.py``` and put it in your project.
+
+Then you can import it where you need it :
+```python
+from OPTransporter import OPTransporter
+```
+
+Finally you need to instantiate an OPTransporter object.
+For example :
+```py
+ot = OPTransporter("pexelA-0.png", "pexelB-0.png", OPTransporter.RGB, True)
+````
+
+OPTransporter constructor
+
+| Parameter  | Description  | 
+|---|---|
+| source_path | image path for the source (color) image |
+| destination_path | image path for the destination (shape) image |
+| use_lab | boolean defining if the lab color space is used (default : RGB) |
+| verbose | boolean defining if the verbose mode should be used (default : False) |

@@ -36,7 +36,7 @@ def sort_and_project(source, destination):
     d_p = project_on_direction(d, destination)
     s_i = np.argsort(s_p)
     d_i = np.argsort(d_p)
-    return s_p, d_p, s_i, d_i, d
+    return s_i, d_i
 
 
 def get_new_projection(source, destination, gamma):
@@ -78,9 +78,10 @@ class OPTransporter:
     LAB = True
     RGB = False
 
-    def __init__(self, source_path, destination_path, use_lab=False):
+    def __init__(self, source_path, destination_path, use_lab=False, verbose=False):
         destination = cv2.imread(destination_path, cv2.IMREAD_COLOR)
         self.use_lab = use_lab
+        self.verbose = verbose
         if use_lab:
             destination = np.uint8(destination)
             self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
@@ -96,11 +97,12 @@ class OPTransporter:
         self.source = cv2.resize(source, (w, h), interpolation=cv2.INTER_LINEAR)
 
     def opt_transport_v1(self):
+        t0 = time.time()
         if self.source.shape == self.destination.shape:
             h, w, c = self.source.shape
-            s_p, d_p, s_i, d_i, d = sort_and_project(self.source, self.destination)
+            s_i, d_i = sort_and_project(self.source, self.destination)
             output = self.destination.copy()
-            for i in range(len(s_p)):
+            for i in range(len(s_i)):
                 s_i_i = s_i[i]
                 d_i_i = d_i[i]
                 xd = d_i_i // w
@@ -108,8 +110,14 @@ class OPTransporter:
                 xs = s_i_i // w
                 ys = s_i_i % w
                 output[xd, yd] = self.source[xs, ys]
+            if self.use_lab:
+                output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             cv2.imwrite('output.png', output)
+            if self.verbose:
+                print("Elapsed time : ", time.time() - t0)
             return True
+        if self.verbose:
+            print("Error : Images are not of the same shape")
         return False
 
     def opt_transport_v2(self, gamma, iteration):
@@ -117,13 +125,17 @@ class OPTransporter:
         if self.source.shape == self.destination.shape:
             output = self.destination.copy()
             for k in range(iteration):
-                print('\rIteration ' + str(k+1) + " out of " + str(iteration), end='', flush=True)
+                if self.verbose:
+                    print('\rIteration ' + str(k+1) + " out of " + str(iteration), end='', flush=True)
                 diff = get_new_projection(self.source, output, gamma)
                 output = np.add(output, diff)
             if self.use_lab:
                 output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
             cv2.imwrite('output.png', output)
-            print()
-            print("Elapsed time : ", time.time() - t0)
+            if self.verbose:
+                print()
+                print("Elapsed time : ", time.time() - t0)
             return True
+        if self.verbose:
+            print("Error : Images are not of the same shape")
         return False

@@ -78,11 +78,15 @@ class OPTransporter:
     LAB = True
     RGB = False
 
+    BASENAME = "output"
+
     def __init__(self, source_path, destination_path, use_lab=False, verbose=False):
         destination = cv2.imread(destination_path, cv2.IMREAD_COLOR)
         self.use_lab = use_lab
         self.verbose = verbose
         if use_lab:
+            if self.verbose:
+                print("Using LAB color space")
             destination = np.uint8(destination)
             self.destination = cv2.cvtColor(destination, cv2.COLOR_BGR2Lab)
         else:
@@ -95,6 +99,17 @@ class OPTransporter:
             source = np.float32(source)
         h, w, c = self.destination.shape
         self.source = cv2.resize(source, (w, h), interpolation=cv2.INTER_LINEAR)
+        if self.verbose:
+            print("Color image (source) resized to h:" + str(h) + ", w:" + str(w) + ", c:" + str(c))
+
+    def save_image(self, image, version):
+        filename = self.BASENAME
+        if self.use_lab:
+            filename += "_lab"
+        else:
+            filename += "_rgb"
+        filename += "_v" + str(version) + ".png"
+        cv2.imwrite(filename, image)
 
     def opt_transport_v1(self):
         t0 = time.time()
@@ -112,7 +127,7 @@ class OPTransporter:
                 output[xd, yd] = self.source[xs, ys]
             if self.use_lab:
                 output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
-            cv2.imwrite('output.png', output)
+            self.save_image(output, 1)
             if self.verbose:
                 print("Elapsed time : ", time.time() - t0)
             return True
@@ -131,7 +146,7 @@ class OPTransporter:
                 output = np.add(output, diff)
             if self.use_lab:
                 output = cv2.cvtColor(output.astype('uint8'), cv2.COLOR_Lab2BGR)
-            cv2.imwrite('output.png', output)
+            self.save_image(output, 2)
             if self.verbose:
                 print()
                 print("Elapsed time : ", time.time() - t0)
